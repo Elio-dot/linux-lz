@@ -1,0 +1,8 @@
+#! /bin/sh
+export PROJECT_DIR=$PWD
+if [ -f "bochs/disk.img.lock" ];then
+    echo "文件存在"
+    rm -d bochs/disk.img.lock
+fi
+
+$PROJECT_DIR/bochs/bochs-dbg -f $PROJECT_DIR/bochs/bochsrc.bxrc
