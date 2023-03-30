@@ -1,7 +1,7 @@
 
 
 
-all:bochs/disk.img
+all:bochs/disk.img boot/bootsect
 
 bochs/disk.img:
 	dd if=boot/bootsect of=bochs/disk.img conv=notrunc 
@@ -15,4 +15,5 @@ boot/bootsect:boot/bootsect.s
 
 .PHONY:clean
 clean:
-	rm boot/bootsect
+	-rm boot/bootsect
+	-rm -r boot/*.o
