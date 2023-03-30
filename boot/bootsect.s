@@ -27,6 +27,21 @@ go:
     movw %ax, %ss 
     movw $0xff00, %sp  # arbitrary value >> 512 
 
+// print message:
+    movb $0x03, %ah 
+    xorb %bh, %bh 
+    int  $0x10
+    movw len, %cx 
+    movw $0x0007, %bx 
+    movw $msg, %bp 
+    movw $0x1301, %ax 
+    int  $0x10
+
+loop:
+    cli 
+    hlt 
+    jmp loop
+
 load_setup:
     movw $0x0000, %dx 
     movw $0x0002, %cx 
@@ -48,15 +63,7 @@ ok_load_setup:
     movw $INITSEG, %ax
     movw %ax, %es  
 
-// print message:
-    movb $0x03, %ah 
-    xorb %bh, %bh 
-    int  $0x10
-    movw $21, %cx 
-    movw $0x0007, %bx 
-    movw $msg, %bp 
-    movw $0x1301, %ax 
-    int  $0x10
+
 
 // load system
     movw $SYSSEG, %ax 
@@ -73,7 +80,8 @@ die:
 
 
 msg:     .ascii "\n\rLoading lz OS...\n\r"
-len:     .word .-msg
+len:    
+         .word .- msg
 sectors: .word 0x0000
 sread:   .word 1+SETUPLEN
 head:    .word 0x0000
