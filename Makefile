@@ -3,9 +3,9 @@
 
 AS = as 
 LD = ld
-all:bochs/disk.img boot/bootsect
+all:bochs/disk.img
 
-bochs/disk.img:
+bochs/disk.img:boot/bootsect
 	dd if=boot/bootsect of=bochs/disk.img conv=notrunc 
 
 bochs/disk.img:boot/bootsect

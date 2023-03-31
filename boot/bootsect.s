@@ -10,6 +10,7 @@ SETUPSEG = 0x9020			        # setup starts here
 SYSSEG   = 0x1000			        # system loaded at 0x10000 (65536).
 ENDSEG   = SYSSEG + SYSSIZE		    # where to stop loading
 OFFSET   = 0x7c00
+ROOT_DEV =0x306
 _start:
     movw $BOOTSEG, %ax              # set ds to 0x07c0 设置数据段寄存器为 0x07c0
     movw %ax, %ds
@@ -27,6 +28,27 @@ go:
     movw %ax, %ss 
     movw $0xff00, %sp               # arbitrary value >> 512 
 
+load_setup:
+    movw $0x0000, %dx               # drive 0, head 0
+    movw $0x0002, %cx               # track 0, sector 2
+    movw $0x0200, %bx               # address=es:bx 
+    movw $(0x0200+4), %ax           # ah=0x02, service 2 , read; al=nr of sectors to read
+    int  $0x13
+    jnc  ok_load_setup
+    movw $0x0000, %dx 
+    movw $0x0000, %ax               # reset the diskette
+    int  $0x13 
+    jmp  load_setup
+
+ok_load_setup:
+    movb $0x00, %dl  
+    movw $0x0800, %ax 
+    int  $0x13 
+    movb $0x00, %ch                 # cl = nr of sectors/track
+    movw %cx, sectors
+    movw $INITSEG, %ax
+    movw %ax, %es  
+
 // print message:
     movb $0x03, %ah 
     xorb %bh, %bh 
@@ -37,35 +59,8 @@ go:
     movw $0x1301, %ax 
     int  $0x10
 
-loop:
-    cli 
-    hlt 
-    jmp loop
 
-load_setup:
-    movw $0x0000, %dx 
-    movw $0x0002, %cx 
-    movw $0x0200, %bx 
-    movw $(0x0200+4), %ax 
-    int  $0x13
-    jnc  ok_load_setup
-    movw $0x0000, %dx 
-    movw $0x0000, %ax 
-    int  $0x13 
-    jmp  load_setup
-
-ok_load_setup:
-    movb $0x00, %dl  
-    movw $0x0800, %ax 
-    int  $0x13 
-    movb $0x00, %ch 
-    movw %cx, sectors
-    movw $INITSEG, %ax
-    movw %ax, %es  
-
-
-
-// load system
+// loading the system
     movw $SYSSEG, %ax 
     movw %ax, %es 
     call read_it
@@ -73,18 +68,30 @@ ok_load_setup:
 
 read_it:
     movw  %es, %ax 
-    testw $0x0fff, %ax 
-die:
-    jne die
-    xorw %bx,%bx 
+    testw $0x0fff, %ax          # zf=1
+die:jne die                     # jmp when zf=0
+    xorw %bx,%bx                # bx is starting address within segment, bx 是段内起始地址
+rp_read:
+    movw %es, %ax 
+    cmpw $ENDSEG, %ax           # have we read all yet? 
+    jb   ok1_read               # jmp if ENDSEG>AX  else ret 
+    ret 
 
+ok1_read:
+    movw sectors, %ax 
+    subw sread, %ax 
+    movw %ax, %cx               # 00000001
+    shlw $9, %cx 
+    addw %bx, %cx 
+    jnc  ok2_read
+ok2_read:
 
-msg:     .ascii "\n\rLoading lz OS...\n\r"
-len:    
-         .word .- msg
-sectors: .word 0x0000
-sread:   .word 1+SETUPLEN
-head:    .word 0x0000
-track:   .word 0x0000
-.org      510
+msg:        .ascii "\n\rLoading lz OS...\n\r"
+len:        .word .- msg
+sectors:    .word 0x0000           # nr of sectors/track set by the config file of bochs     
+sread:      .word 1+SETUPLEN       # sectors read of current track 当前磁道已被读取的扇区数
+head:       .word 0x0000           # current head    当前磁头
+track:      .word 0x0000           # current track   当前磁道
+root_dev:   .word ROOT_DEV
+.org  510
 .word 0xAA55
