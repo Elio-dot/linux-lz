@@ -3,29 +3,29 @@
 .org 0x00
 .global _start
 SYSSIZE  = 0x3000
-SETUPLEN = 4				    # nr of setup-sectors
-BOOTSEG  = 0x07c0			    # original address of boot-sector
-INITSEG  = 0x9000			    # we move boot here - out of the way
-SETUPSEG = 0x9020			    # setup starts here
-SYSSEG   = 0x1000			    # system loaded at 0x10000 (65536).
-ENDSEG   = SYSSEG + SYSSIZE		# where to stop loading
+SETUPLEN = 4				        # nr of setup-sectors
+BOOTSEG  = 0x07c0			        # original address of boot-sector
+INITSEG  = 0x9000			        # we move boot here - out of the way
+SETUPSEG = 0x9020			        # setup starts here
+SYSSEG   = 0x1000			        # system loaded at 0x10000 (65536).
+ENDSEG   = SYSSEG + SYSSIZE		    # where to stop loading
 OFFSET   = 0x7c00
 _start:
-    movw $BOOTSEG, %ax           # set ds to 0x07c0 设置数据段寄存器为 0x07c0
+    movw $BOOTSEG, %ax              # set ds to 0x07c0 设置数据段寄存器为 0x07c0
     movw %ax, %ds
-    movw $INITSEG,%ax           # set es to 0x9000 设置数据段寄存器为 0x9000
+    movw $INITSEG,%ax               # set es to 0x9000 设置数据段寄存器为 0x9000
     movw %ax, %es
 
-    movw $256,%cx                # nr of words to move
-    subw %si,%si                 # let di =0,ei =0 
+    movw $256,%cx                   # nr of words to move
+    subw %si,%si                    # let di =0,ei =0 
     subw %di,%di 
-    rep movsw                    # no specified src and dec, default src=ds:di dec =es:ei 
+    rep movsw                       # no specified src and dec, default src=ds:di dec =es:ei 
     ljmp $INITSEG,$go
 go:
     movw %cs, %ax 
     movw %ax, %ds   
     movw %ax, %ss 
-    movw $0xff00, %sp  # arbitrary value >> 512 
+    movw $0xff00, %sp               # arbitrary value >> 512 
 
 // print message:
     movb $0x03, %ah 

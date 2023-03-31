@@ -1,7 +1,0 @@
-# Bochs 配置文件
-memory: guest=32, host=32
-display_library: sdl
-romimage: file=BIOS-bochs-latest, address=0xf0000
-vgaromimage: file=vgabios.bin
-boot: disk
-ata0-master: type=disk, path=disk.img, mode=flat, cylinders=80, heads=2, spt=18

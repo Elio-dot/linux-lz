@@ -1,6 +1,8 @@
 
 
 
+AS = as 
+LD = ld
 all:bochs/disk.img boot/bootsect
 
 bochs/disk.img:
@@ -9,8 +11,8 @@ bochs/disk.img:
 bochs/disk.img:boot/bootsect
 
 boot/bootsect:boot/bootsect.s
-	as --32 -s boot/bootsect.s -o boot/bootsect.o
-	ld -s -m elf_i386 --oformat=binary -Ttext=0x0000  -pic -N boot/bootsect.o -o boot/bootsect
+	$(AS) --32 -s boot/bootsect.s -o boot/bootsect.o
+	$(LD) -s -m elf_i386 --oformat=binary -Ttext=0x0000  -pic -N boot/bootsect.o -o boot/bootsect
 	truncate -s 512 boot/bootsect
 
 .PHONY:clean
