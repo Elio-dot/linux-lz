@@ -80,11 +80,25 @@ rp_read:
 ok1_read:
     movw sectors, %ax 
     subw sread, %ax 
-    movw %ax, %cx               # 00000001
-    shlw $9, %cx 
-    addw %bx, %cx 
+    movw %ax, %cx              
+    shlw $9, %cx                # cx=cx*512
+    addw %bx, %cx               # cx=cx+bx(offset within segment)
     jnc  ok2_read
+    je   ok2_read
+    xorw %ax, %ax 
+    subw %bx, %ax 
+    shr  $9, %ax 
 ok2_read:
+    call read_track
+    movw %ax, %cx 
+    addw sread, %ax 
+    cmpw sectors, %ax 
+    jne  ok3_read
+ok3_read:
+
+read_track:
+
+
 
 msg:        .ascii "\n\rLoading lz OS...\n\r"
 len:        .word .- msg
